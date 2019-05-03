@@ -2,6 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <Authors>Roman Boykov</Authors>
+    <Description>STUN support for Datagrammer</Description>
+    <PackageProjectUrl>https://github.com/gendalf90/Datagrammer</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/gendalf90/Datagrammer.Stun</RepositoryUrl>
+    <PackageTags>udp client datagram datagrammer stun dataflow reactive rx observable</PackageTags>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
