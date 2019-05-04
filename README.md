@@ -44,6 +44,8 @@ var stunMessageHandler = new StunPipeBlock(new StunPipeOptions
 });
 ```
 
+Note: this block has both interfaces implementation: ISourceBlock<Datagram> and ISourceBlock<StunResponse>. To avoid buffers blocking consume messages from both of these sources.
+
 ### Using
 
 With [Datagrammer](https://github.com/gendalf90/Datagrammer) using example:
@@ -61,6 +63,7 @@ var responseReceivingAction = new ActionBlock<StunResponse>(response =>
 generator.LinkTo(datagramBlock);
 datagramBlock.LinkTo(stunMessageHandler);
 stunMessageHandler.LinkTo(responseReceivingAction);
+stunMessageHandler.LinkTo(DataflowBlock.NullTarget<Datagram>()); //because it works like pipe and you need to consume datagrams too
 
 datagramBlock.Start();
 ```
