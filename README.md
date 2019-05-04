@@ -44,7 +44,7 @@ var stunMessageHandler = new StunPipeBlock(new StunPipeOptions
 });
 ```
 
-Note: this block has both interfaces implementation: ISourceBlock<Datagram> and ISourceBlock<StunResponse>. To avoid buffers blocking consume messages from both of these sources.
+Note: this block has both interfaces implementation: `ISourceBlock<Datagram>` and `ISourceBlock<StunResponse>`. To avoid buffers blocking consume messages from both of these sources.
 
 ### Using
 
