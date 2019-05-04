@@ -18,7 +18,7 @@ using Datagrammer.Stun;
 
 ### Initialization
 
-Every STUN message has transaction identificator value:
+Each STUN message has transaction identificator value:
 
 ```csharp
 var transactionId = Guid.NewGuid();
@@ -31,7 +31,7 @@ var generator = new StunGeneratorBlock(new StunGeneratorOptions
 {
     TransactionId = transactionId,
     Servers = new [] { new IPEndPoint(IPAddress.Parse("64.233.161.127"), 19302) /*stun1.l.google.com:19302*/ },
-    MessageSendingPeriod = TimeSpan.FromSeconds(1)
+    MessageSendingPeriod = TimeSpan.FromSeconds(1) //message will be created for each server after each of these periods
 });
 ```
 
@@ -44,7 +44,7 @@ var stunMessageHandler = new StunPipeBlock(new StunPipeOptions
 });
 ```
 
-Note: this block has both interfaces implementation: `ISourceBlock<Datagram>` and `ISourceBlock<StunResponse>`. To avoid buffers blocking consume messages from both of these sources.
+Note: this block has two interfaces implementation: `ISourceBlock<Datagram>` and `ISourceBlock<StunResponse>`. To avoid buffers blocking consume messages from both of these sources.
 
 ### Using
 
