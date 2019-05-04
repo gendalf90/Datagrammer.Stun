@@ -18,19 +18,24 @@ namespace Datagrammer.Stun
         {
             this.options = options ?? throw new ArgumentNullException(nameof(options));
 
+            if(!options.Servers.Any())
+            {
+                throw new ArgumentException(nameof(options.Servers), "Server must be present");
+            }
+
             sendingBuffer = new BufferBlock<Datagram>(new DataflowBlockOptions
             {
-                BoundedCapacity = 1
+                BoundedCapacity = options.Servers.Length
             });
 
-            sendingTimer = new Timer(SendMessageSafeAsync, null, options.MessageSendingPeriod, Timeout.InfiniteTimeSpan);
+            sendingTimer = new Timer(SendMessagesSafeAsync, null, options.MessageSendingPeriod, Timeout.InfiniteTimeSpan);
 
             stunRequestBytes = new STUNMessage(STUNMessageTypes.BindingRequest, options.TransactionId.ToByteArray()).GetBytes();
 
             Completion = CompleteAsync();
         }
 
-        private async void SendMessageSafeAsync(object state)
+        private async void SendMessagesSafeAsync(object state)
         {
             try
             {
