@@ -20,7 +20,7 @@ namespace Datagrammer.Stun
 
             sendingBuffer = new BufferBlock<Datagram>(new DataflowBlockOptions
             {
-                BoundedCapacity = options.Servers.Length
+                BoundedCapacity = 1
             });
 
             sendingTimer = new Timer(SendMessageSafeAsync, null, options.MessageSendingPeriod, Timeout.InfiniteTimeSpan);
