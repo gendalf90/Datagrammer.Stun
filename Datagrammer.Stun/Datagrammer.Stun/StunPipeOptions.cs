@@ -5,9 +5,7 @@ namespace Datagrammer.Stun
 {
     public sealed class StunPipeOptions
     {
-        public Guid TransactionId { get; set; } = Guid.Empty;
-
-        public int ResponseBufferCapacity { get; set; } = 1;
+        public Guid TransactionId { get; set; }
 
         public MiddlewareOptions MiddlewareOptions { get; set; } = new MiddlewareOptions();
     }

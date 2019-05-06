@@ -1,6 +1,5 @@
 ﻿using STUN;
 using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
@@ -9,61 +8,37 @@ namespace Datagrammer.Stun
 {
     public sealed class StunGeneratorBlock : ISourceBlock<Datagram>
     {
-        private readonly StunGeneratorOptions options;
         private readonly IPropagatorBlock<Datagram, Datagram> sendingBuffer;
         private readonly Timer sendingTimer;
-        private readonly byte[] stunRequestBytes;
 
         public StunGeneratorBlock(StunGeneratorOptions options)
         {
-            this.options = options ?? throw new ArgumentNullException(nameof(options));
-
-            if(!options.Servers.Any())
+            if(options == null)
             {
-                throw new ArgumentException(nameof(options.Servers), "Server must be present");
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            if(options.Server == null)
+            {
+                throw new ArgumentException(nameof(options.Server), "Server must be set");
             }
 
             sendingBuffer = new BufferBlock<Datagram>(new DataflowBlockOptions
             {
-                BoundedCapacity = options.Servers.Length
+                BoundedCapacity = 1
             });
 
-            sendingTimer = new Timer(SendMessagesSafeAsync, null, options.MessageSendingPeriod, Timeout.InfiniteTimeSpan);
+            var stunMessage = new STUNMessage(STUNMessageTypes.BindingRequest, options.TransactionId.ToByteArray());
+            var stunDatagram = new Datagram { EndPoint = options.Server, Bytes = stunMessage.GetBytes() };
 
-            stunRequestBytes = new STUNMessage(STUNMessageTypes.BindingRequest, options.TransactionId.ToByteArray()).GetBytes();
+            sendingTimer = new Timer(PostMessage, stunDatagram, options.MessageSendingPeriod, options.MessageSendingPeriod);
 
             Completion = CompleteAsync();
         }
 
-        private async void SendMessagesSafeAsync(object state)
+        private void PostMessage(object state)
         {
-            try
-            {
-                await SendMessagesAsync();
-                RestartTimer();
-            }
-            catch(Exception e)
-            {
-                Fault(e);
-            }
-        }
-
-        private async Task SendMessagesAsync()
-        {
-            var sendingTasks = options.Servers
-                                      .Select(server => new Datagram
-                                      {
-                                          Bytes = stunRequestBytes,
-                                          EndPoint = server
-                                      })
-                                      .Select(sendingBuffer.SendAsync);
-
-            await Task.WhenAll(sendingTasks);
-        }
-
-        private void RestartTimer()
-        {
-            sendingTimer.Change(options.MessageSendingPeriod, Timeout.InfiniteTimeSpan);
+            sendingBuffer.Post((Datagram)state);
         }
 
         public Task Completion { get; private set; }

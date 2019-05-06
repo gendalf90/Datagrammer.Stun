@@ -4,23 +4,18 @@ using STUN.Attributes;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
 
 namespace Datagrammer.Stun
 {
-    public sealed class StunPipeBlock : MiddlewareBlock, ISourceBlock<StunResponse>
+    public sealed class StunPipeBlock : MiddlewareBlock
     {
-        private readonly Guid transactionId;
-        private readonly IPropagatorBlock<StunResponse, StunResponse> responseBuffer;
+        private readonly StunPipeOptions options;
+        private readonly Func<StunResponse, Task> stunResponseHandler;
 
-        public StunPipeBlock(StunPipeOptions options) : base(options?.MiddlewareOptions)
+        public StunPipeBlock(Func<StunResponse, Task> stunResponseHandler, StunPipeOptions options) : base(options?.MiddlewareOptions)
         {
-            transactionId = options.TransactionId;
-
-            responseBuffer = new BufferBlock<StunResponse>(new DataflowBlockOptions
-            {
-                BoundedCapacity = options.ResponseBufferCapacity
-            });
+            this.options = options;
+            this.stunResponseHandler = stunResponseHandler ?? throw new ArgumentNullException(nameof(stunResponseHandler));
         }
 
         protected override async Task ProcessAsync(Datagram datagram)
@@ -41,7 +36,7 @@ namespace Datagrammer.Stun
 
             var receivedTransactionId = new Guid(receivedMessage.TransactionID);
 
-            if (receivedTransactionId != transactionId)
+            if (receivedTransactionId != options.TransactionId)
             {
                 return;
             }
@@ -55,45 +50,10 @@ namespace Datagrammer.Stun
                 return;
             }
 
-            await responseBuffer.SendAsync(new StunResponse
+            await stunResponseHandler(new StunResponse
             {
                 PublicAddress = mappedAddressAttribute.EndPoint
             });
-        }
-
-        protected override async Task AwaitCompletionAsync()
-        {
-            await responseBuffer.Completion;
-        }
-
-        protected override void OnComplete()
-        {
-            responseBuffer.Complete();
-        }
-
-        protected override void OnFault(Exception exception)
-        {
-            responseBuffer.Fault(exception);
-        }
-
-        public IDisposable LinkTo(ITargetBlock<StunResponse> target, DataflowLinkOptions linkOptions)
-        {
-            return responseBuffer.LinkTo(target, linkOptions);
-        }
-
-        public StunResponse ConsumeMessage(DataflowMessageHeader messageHeader, ITargetBlock<StunResponse> target, out bool messageConsumed)
-        {
-            return responseBuffer.ConsumeMessage(messageHeader, target, out messageConsumed);
-        }
-
-        public bool ReserveMessage(DataflowMessageHeader messageHeader, ITargetBlock<StunResponse> target)
-        {
-            return responseBuffer.ReserveMessage(messageHeader, target);
-        }
-
-        public void ReleaseReservation(DataflowMessageHeader messageHeader, ITargetBlock<StunResponse> target)
-        {
-            responseBuffer.ReleaseReservation(messageHeader, target);
         }
     }
 }

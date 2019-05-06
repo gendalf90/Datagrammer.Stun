@@ -5,9 +5,9 @@ namespace Datagrammer.Stun
 {
     public sealed class StunGeneratorOptions
     {
-        public Guid TransactionId { get; set; } = Guid.Empty;
+        public Guid TransactionId { get; set; }
 
-        public IPEndPoint[] Servers { get; set; } = Array.Empty<IPEndPoint>();
+        public IPEndPoint Server { get; set; }
 
         public TimeSpan MessageSendingPeriod { get; set; } = TimeSpan.FromMilliseconds(500);
     }
