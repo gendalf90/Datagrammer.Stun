@@ -30,21 +30,25 @@ To initialize STUN messages generator use this code:
 var generator = new StunGeneratorBlock(new StunGeneratorOptions
 {
     TransactionId = transactionId,
-    Servers = new [] { new IPEndPoint(IPAddress.Parse("64.233.161.127"), 19302) /*stun1.l.google.com:19302*/ },
-    MessageSendingPeriod = TimeSpan.FromSeconds(1) //message will be created for each server after each of these periods
+    Server = new IPEndPoint(IPAddress.Parse("64.233.161.127"), 19302), //stun1.l.google.com:19302
+    MessageSendingPeriod = TimeSpan.FromSeconds(1) //message will be created after each of these periods
 });
 ```
 
 Also you need STUN message handler. Define it like this:
 
 ```csharp
-var stunMessageHandler = new StunPipeBlock(new StunPipeOptions
+Func<StunResponse, Task> responseHandlingFunc = response =>
+{
+    Console.WriteLine(response.PublicAddress);
+    return Task.CompletedTask;
+};
+
+var stunMessageHandler = new StunPipeBlock(responseHandlingFunc, new StunPipeOptions
 {
     TransactionId = transactionId //needed to identify responses from server
 });
 ```
-
-Note: this block has two interfaces implementation: `ISourceBlock<Datagram>` and `ISourceBlock<StunResponse>`. To avoid buffers blocking consume messages from both of these sources.
 
 ### Using
 
@@ -55,15 +59,10 @@ var datagramBlock = new DatagramBlock(new DatagramOptions
 {
     ListeningPoint = new IPEndPoint(IPAddress.Any, 50000)
 });
-var responseReceivingAction = new ActionBlock<StunResponse>(response =>
-{
-    Console.WriteLine(response.PublicAddress);
-});
 
 generator.LinkTo(datagramBlock);
 datagramBlock.LinkTo(stunMessageHandler);
-stunMessageHandler.LinkTo(responseReceivingAction);
-stunMessageHandler.LinkTo(DataflowBlock.NullTarget<Datagram>()); //because it works like pipe and you need to consume datagrams too
+stunMessageHandler.LinkTo(DataflowBlock.NullTarget<Datagram>()); //because it works like pipe and you need to consume datagrams that buffer isn't blocked
 
 datagramBlock.Start();
 ```
