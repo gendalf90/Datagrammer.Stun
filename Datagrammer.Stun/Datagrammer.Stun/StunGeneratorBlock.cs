@@ -29,7 +29,7 @@ namespace Datagrammer.Stun
             });
 
             var stunMessage = new STUNMessage(STUNMessageTypes.BindingRequest, options.TransactionId.ToByteArray());
-            var stunDatagram = new Datagram { EndPoint = options.Server, Bytes = stunMessage.GetBytes() };
+            var stunDatagram = new Datagram(stunMessage.GetBytes(), options.Server);
 
             sendingTimer = new Timer(PostMessage, stunDatagram, options.MessageSendingPeriod, options.MessageSendingPeriod);
 

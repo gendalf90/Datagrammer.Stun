@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Datagrammer.Stun
 {
-    public sealed class StunPipeBlock : MiddlewareBlock
+    public sealed class StunPipeBlock : MiddlewareBlock<Datagram, Datagram>
     {
         private readonly StunPipeOptions options;
         private readonly Func<StunResponse, Task> stunResponseHandler;
@@ -24,7 +24,7 @@ namespace Datagrammer.Stun
 
             var receivedMessage = new STUNMessage(STUNMessageTypes.BindingErrorResponse, Array.Empty<byte>());
 
-            if (!receivedMessage.TryParse(datagram.Bytes))
+            if (!receivedMessage.TryParse(datagram.GetBytes()))
             {
                 return;
             }
