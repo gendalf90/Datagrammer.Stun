@@ -24,7 +24,7 @@ namespace Datagrammer.Stun
 
             var receivedMessage = new STUNMessage(STUNMessageTypes.BindingErrorResponse, Array.Empty<byte>());
 
-            if (!receivedMessage.TryParse(datagram.GetBytes()))
+            if (!receivedMessage.TryParse(datagram.Buffer.ToArray()))
             {
                 return;
             }

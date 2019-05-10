@@ -1,18 +1,18 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <Authors>Roman Boykov</Authors>
     <Description>STUN support for Datagrammer</Description>
     <PackageProjectUrl>https://github.com/gendalf90/Datagrammer</PackageProjectUrl>
     <RepositoryUrl>https://github.com/gendalf90/Datagrammer.Stun</RepositoryUrl>
     <PackageTags>udp client datagram datagrammer stun dataflow reactive rx observable</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>3.0.0</Version>
+    <Version>4.0.0-alpha</Version>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Datagrammer" Version="4.0.0" />
+    <PackageReference Include="Datagrammer" Version="5.0.0-alpha" />
     <PackageReference Include="STUN" Version="0.5.0" />
   </ItemGroup>
 
