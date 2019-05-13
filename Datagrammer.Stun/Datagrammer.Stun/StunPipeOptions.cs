@@ -7,6 +7,8 @@ namespace Datagrammer.Stun
     {
         public Guid TransactionId { get; set; }
 
+        public int ResponseBufferCapacity { get; set; } = 1;
+
         public MiddlewareOptions MiddlewareOptions { get; set; } = new MiddlewareOptions();
     }
 }

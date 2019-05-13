@@ -27,13 +27,11 @@ namespace Tests.Integration
                 Server = new IPEndPoint(IPAddress.Parse("64.233.161.127"), 19302), //stun1.l.google.com:19302
                 MessageSendingPeriod = TimeSpan.FromSeconds(1)
             });
-            var stunMessagePipe = new StunPipeBlock(response =>
-            {
-                receivedResponses.Add(response);
-                return Task.CompletedTask;
-            }, new StunPipeOptions { TransactionId = transationId });
+            var stunMessageHandler = new ActionBlock<StunResponse>(response => receivedResponses.Add(response));
+            var stunMessagePipe = new StunPipeBlock(new StunPipeOptions { TransactionId = transationId });
             stunMessagesGenerator.LinkTo(datagramBlock, new DataflowLinkOptions { PropagateCompletion = true });
             datagramBlock.LinkTo(stunMessagePipe, new DataflowLinkOptions { PropagateCompletion = true });
+            stunMessagePipe.LinkTo(stunMessageHandler, new DataflowLinkOptions { PropagateCompletion = true });
             stunMessagePipe.LinkTo(DataflowBlock.NullTarget<Datagram>());
 
             datagramBlock.Start();
@@ -42,7 +40,8 @@ namespace Tests.Integration
             stunMessagesGenerator.Complete();
             await Task.WhenAll(stunMessagesGenerator.Completion,
                                datagramBlock.Completion,
-                               stunMessagePipe.Completion);
+                               stunMessagePipe.Completion,
+                               stunMessageHandler.Completion);
 
             receivedResponses.Should().HaveCountGreaterOrEqualTo(3);
         }
