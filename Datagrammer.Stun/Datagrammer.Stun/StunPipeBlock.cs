@@ -1,6 +1,5 @@
 ﻿using Datagrammer.Middleware;
-using STUN;
-using STUN.Attributes;
+using LumiSoft.Net.STUN.Message;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,7 +14,17 @@ namespace Datagrammer.Stun
 
         public StunPipeBlock(StunPipeOptions options) : base(options?.MiddlewareOptions)
         {
-            this.options = options;
+            this.options = options ?? throw new ArgumentNullException(nameof(options));
+
+            if (options.TransactionId == null)
+            {
+                throw new ArgumentNullException(nameof(options.TransactionId));
+            }
+
+            if (options.TransactionId.Length != 12)
+            {
+                throw new ArgumentException("Transaction id must be with length 12");
+            }
 
             responseBuffer = new BufferBlock<StunResponse>(new DataflowBlockOptions
             {
@@ -27,38 +36,45 @@ namespace Datagrammer.Stun
         {
             await NextAsync(datagram);
 
-            var receivedMessage = new STUNMessage(STUNMessageTypes.BindingErrorResponse, Array.Empty<byte>());
-
-            if (!receivedMessage.TryParse(datagram.Buffer.ToArray()))
+            if (!TryParseStunMessage(datagram.Buffer.ToArray(), out var receivedMessage))
             {
                 return;
             }
 
-            if (receivedMessage.MessageType != STUNMessageTypes.BindingResponse)
+            if (receivedMessage.Type != STUN_MessageType.BindingResponse)
             {
                 return;
             }
 
-            var receivedTransactionId = new Guid(receivedMessage.TransactionID);
-
-            if (receivedTransactionId != options.TransactionId)
+            if (!receivedMessage.TransactionID.SequenceEqual(options.TransactionId))
             {
                 return;
             }
 
-            var mappedAddressAttribute = receivedMessage.Attributes
-                                                        .OfType<STUNMappedAddressAttribute>()
-                                                        .FirstOrDefault();
-
-            if (mappedAddressAttribute == null)
+            if (receivedMessage.MappedAddress == null)
             {
                 return;
             }
 
             await responseBuffer.SendAsync(new StunResponse
             {
-                PublicAddress = mappedAddressAttribute.EndPoint
+                PublicAddress = receivedMessage.MappedAddress
             });
+        }
+
+        private bool TryParseStunMessage(byte[] bytes, out STUN_Message message)
+        {
+            message = new STUN_Message();
+
+            try
+            {
+                message.Parse(bytes);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         protected override Task AwaitCompletionAsync()

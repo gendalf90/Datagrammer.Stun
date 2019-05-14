@@ -1,4 +1,4 @@
-﻿using STUN;
+﻿using LumiSoft.Net.STUN.Message;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,16 +9,27 @@ namespace Datagrammer.Stun
     public sealed class StunGeneratorBlock : ISourceBlock<Datagram>
     {
         private readonly IPropagatorBlock<Datagram, Datagram> sendingBuffer;
-        private readonly Timer sendingTimer;
+
+        private Timer sendingTimer;
 
         public StunGeneratorBlock(StunGeneratorOptions options)
         {
-            if(options == null)
+            if (options == null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
 
-            if(options.Server == null)
+            if (options.TransactionId == null)
+            {
+                throw new ArgumentNullException(nameof(options.TransactionId));
+            }
+
+            if (options.TransactionId.Length != 12)
+            {
+                throw new ArgumentException("Transaction id must be with length 12");
+            }
+
+            if (options.Server == null)
             {
                 throw new ArgumentException(nameof(options.Server), "Server must be set");
             }
@@ -28,12 +39,19 @@ namespace Datagrammer.Stun
                 BoundedCapacity = 1
             });
 
-            var stunMessage = new STUNMessage(STUNMessageTypes.BindingRequest, options.TransactionId.ToByteArray());
-            var stunDatagram = new Datagram(stunMessage.GetBytes(), options.Server);
-
-            sendingTimer = new Timer(PostMessage, stunDatagram, options.MessageSendingPeriod, options.MessageSendingPeriod);
+            StartTimer(options);
 
             Completion = CompleteAsync();
+        }
+
+        private void StartTimer(StunGeneratorOptions options)
+        {
+            var stunMessage = new STUN_Message();
+            options.TransactionId.CopyTo(stunMessage.TransactionID, 0);
+            stunMessage.Type = STUN_MessageType.BindingRequest;
+            var stunDatagram = new Datagram(stunMessage.ToByteData(), options.Server);
+
+            sendingTimer = new Timer(PostMessage, stunDatagram, options.MessageSendingPeriod, options.MessageSendingPeriod);
         }
 
         private void PostMessage(object state)

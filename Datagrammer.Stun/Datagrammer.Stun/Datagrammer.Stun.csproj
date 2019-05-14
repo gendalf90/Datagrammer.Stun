@@ -8,12 +8,12 @@
     <RepositoryUrl>https://github.com/gendalf90/Datagrammer.Stun</RepositoryUrl>
     <PackageTags>udp client datagram datagrammer stun dataflow reactive rx observable</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>4.0.0.1-alpha</Version>
+    <Version>4.0.0.2-alpha</Version>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Datagrammer" Version="5.0.0-alpha" />
-    <PackageReference Include="STUN" Version="0.5.0" />
+    <PackageReference Include="Xycui.LumiSoft.Net" Version="1.0.0" />
   </ItemGroup>
 
 </Project>
