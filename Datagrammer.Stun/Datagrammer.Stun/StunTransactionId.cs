@@ -29,7 +29,7 @@ namespace Datagrammer.Stun
 
         public bool Equals(StunTransactionId other)
         {
-            return bytes.Span.SequenceEqual(other.bytes.Span);
+            return AsMemory().Span.SequenceEqual(other.AsMemory().Span);
         }
 
         public override int GetHashCode()
