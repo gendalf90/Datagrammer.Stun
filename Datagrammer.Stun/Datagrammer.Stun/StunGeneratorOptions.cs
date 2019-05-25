@@ -5,7 +5,7 @@ namespace Datagrammer.Stun
 {
     public sealed class StunGeneratorOptions
     {
-        public byte[] TransactionId { get; set; }
+        public StunTransactionId TransactionId { get; set; }
 
         public IPEndPoint Server { get; set; }
 

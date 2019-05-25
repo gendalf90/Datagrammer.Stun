@@ -1,5 +1,4 @@
-﻿using LumiSoft.Net.STUN.Message;
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
@@ -19,16 +18,6 @@ namespace Datagrammer.Stun
                 throw new ArgumentNullException(nameof(options));
             }
 
-            if (options.TransactionId == null)
-            {
-                throw new ArgumentNullException(nameof(options.TransactionId));
-            }
-
-            if (options.TransactionId.Length != 12)
-            {
-                throw new ArgumentException("Transaction id must be with length 12");
-            }
-
             if (options.Server == null)
             {
                 throw new ArgumentException(nameof(options.Server), "Server must be set");
@@ -46,10 +35,10 @@ namespace Datagrammer.Stun
 
         private void StartTimer(StunGeneratorOptions options)
         {
-            var stunMessage = new STUN_Message();
-            options.TransactionId.CopyTo(stunMessage.TransactionID, 0);
-            stunMessage.Type = STUN_MessageType.BindingRequest;
-            var stunDatagram = new Datagram(stunMessage.ToByteData(), options.Server);
+            var stunMessage = new StunMessage(options.TransactionId);
+            var address = options.Server.Address.GetAddressBytes();
+            var port = options.Server.Port;
+            var stunDatagram = new Datagram(stunMessage.CreateBindingRequest(), address, port);
 
             sendingTimer = new Timer(PostMessage, stunDatagram, options.MessageSendingPeriod, options.MessageSendingPeriod);
         }

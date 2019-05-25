@@ -4,7 +4,7 @@ namespace Datagrammer.Stun
 {
     public sealed class StunPipeOptions
     {
-        public byte[] TransactionId { get; set; }
+        public StunTransactionId TransactionId { get; set; }
 
         public int ResponseBufferCapacity { get; set; } = 1;
 

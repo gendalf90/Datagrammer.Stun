@@ -16,8 +16,7 @@ namespace Tests.Integration
         public async Task SendingAndReceiving()
         {
             var random = new Random();
-            var transationId = new byte[12];
-            random.NextBytes(transationId);
+            var transationId = StunTransactionId.Generate();
             var receivedResponses = new List<StunResponse>();
             var datagramBlock = new DatagramBlock(new DatagramOptions
             {

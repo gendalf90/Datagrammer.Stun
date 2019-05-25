@@ -1,7 +1,5 @@
 ﻿using Datagrammer.Middleware;
-using LumiSoft.Net.STUN.Message;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
@@ -9,22 +7,12 @@ namespace Datagrammer.Stun
 {
     public sealed class StunPipeBlock : MiddlewareBlock<Datagram, Datagram>, ISourceBlock<StunResponse>
     {
-        private readonly StunPipeOptions options;
         private readonly IPropagatorBlock<StunResponse, StunResponse> responseBuffer;
+        private readonly StunMessage stunMessage;
 
         public StunPipeBlock(StunPipeOptions options) : base(options?.MiddlewareOptions)
         {
-            this.options = options ?? throw new ArgumentNullException(nameof(options));
-
-            if (options.TransactionId == null)
-            {
-                throw new ArgumentNullException(nameof(options.TransactionId));
-            }
-
-            if (options.TransactionId.Length != 12)
-            {
-                throw new ArgumentException("Transaction id must be with length 12");
-            }
+            stunMessage = new StunMessage(options.TransactionId);
 
             responseBuffer = new BufferBlock<StunResponse>(new DataflowBlockOptions
             {
@@ -36,44 +24,9 @@ namespace Datagrammer.Stun
         {
             await NextAsync(datagram);
 
-            if (!TryParseStunMessage(datagram.Buffer.ToArray(), out var receivedMessage))
+            if (stunMessage.TryParseBindingResponse(datagram.Buffer, out StunResponse response))
             {
-                return;
-            }
-
-            if (receivedMessage.Type != STUN_MessageType.BindingResponse)
-            {
-                return;
-            }
-
-            if (!receivedMessage.TransactionID.SequenceEqual(options.TransactionId))
-            {
-                return;
-            }
-
-            if (receivedMessage.MappedAddress == null)
-            {
-                return;
-            }
-
-            await responseBuffer.SendAsync(new StunResponse
-            {
-                PublicAddress = receivedMessage.MappedAddress
-            });
-        }
-
-        private bool TryParseStunMessage(byte[] bytes, out STUN_Message message)
-        {
-            message = new STUN_Message();
-
-            try
-            {
-                message.Parse(bytes);
-                return true;
-            }
-            catch
-            {
-                return false;
+                await responseBuffer.SendAsync(response);
             }
         }
 
