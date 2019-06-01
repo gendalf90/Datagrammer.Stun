@@ -8,11 +8,12 @@ namespace Datagrammer.Stun
     public sealed class StunPipeBlock : MiddlewareBlock<Datagram, Datagram>, ISourceBlock<StunResponse>
     {
         private readonly IPropagatorBlock<StunResponse, StunResponse> responseBuffer;
-        private readonly StunMessage stunMessage;
+
+        private readonly StunTransactionId transactionId;
 
         public StunPipeBlock(StunPipeOptions options) : base(options?.MiddlewareOptions)
         {
-            stunMessage = new StunMessage(options.TransactionId);
+            transactionId = options.TransactionId;
 
             responseBuffer = new BufferBlock<StunResponse>(new DataflowBlockOptions
             {
@@ -24,9 +25,41 @@ namespace Datagrammer.Stun
         {
             await NextAsync(datagram);
 
-            if (stunMessage.TryParseBindingResponse(datagram.Buffer, out StunResponse response))
+            if(!StunMessage.TryParse(datagram.Buffer, out var message))
             {
-                await responseBuffer.SendAsync(response);
+                return;
+            }
+
+            if(message.Type != StunMessageType.BindingResponse)
+            {
+                return;
+            }
+
+            if(message.TransactionId != transactionId)
+            {
+                return;
+            }
+
+            var response = new StunResponse();
+
+            foreach(var attribute in message)
+            {
+                TryParseMappedAddressAttribute(attribute, response);
+            }
+
+            await responseBuffer.SendAsync(response);
+        }
+
+        private void TryParseMappedAddressAttribute(StunAttribute attribute, StunResponse context)
+        {
+            if(attribute.Type != StunAttributeType.MappedAddress)
+            {
+                return;
+            }
+
+            if (StunIPEndPointParser.TryParse(attribute.Content.Span, out var endPoint))
+            {
+                context.PublicAddress = endPoint;
             }
         }
 
