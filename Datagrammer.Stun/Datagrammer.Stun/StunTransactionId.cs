@@ -38,7 +38,7 @@ namespace Datagrammer.Stun
             {
                 var hash = 17;
 
-                foreach(var b in bytes.Span)
+                foreach(var b in AsMemory().Span)
                 {
                     hash = hash * 31 + b;
                 }
