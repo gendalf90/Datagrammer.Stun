@@ -3,36 +3,26 @@ using System.Net;
 
 namespace Datagrammer.Stun
 {
-    public static class NetworkBitConverter
+    internal static class NetworkBitConverter
     {
         public static short ToInt16(ReadOnlySpan<byte> bytes)
         {
-            return IPAddress.NetworkToHostOrder(BitConverter.ToInt16(bytes));
+            return IPAddress.NetworkToHostOrder(UnsafeBitConverter.ToInt16(bytes));
         }
 
         public static int ToInt32(ReadOnlySpan<byte> bytes)
         {
-            return IPAddress.NetworkToHostOrder(BitConverter.ToInt32(bytes));
+            return IPAddress.NetworkToHostOrder(UnsafeBitConverter.ToInt32(bytes));
         }
 
-        public static long ToInt64(ReadOnlySpan<byte> bytes)
+        public static void WriteBytes(Span<byte> destination, short value)
         {
-            return IPAddress.NetworkToHostOrder(BitConverter.ToInt64(bytes));
+            UnsafeBitConverter.WriteBytes(destination, IPAddress.HostToNetworkOrder(value));
         }
 
-        public static bool TryWriteBytes(Span<byte> destination, short value)
+        public static void WriteBytes(Span<byte> destination, int value)
         {
-            return BitConverter.TryWriteBytes(destination, IPAddress.HostToNetworkOrder(value));
-        }
-
-        public static bool TryWriteBytes(Span<byte> destination, int value)
-        {
-            return BitConverter.TryWriteBytes(destination, IPAddress.HostToNetworkOrder(value));
-        }
-
-        public static bool TryWriteBytes(Span<byte> destination, long value)
-        {
-            return BitConverter.TryWriteBytes(destination, IPAddress.HostToNetworkOrder(value));
+            UnsafeBitConverter.WriteBytes(destination, IPAddress.HostToNetworkOrder(value));
         }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Net;
 
 namespace Datagrammer.Stun
 {
@@ -14,7 +13,7 @@ namespace Datagrammer.Stun
         {
             Type = NetworkBitConverter.ToInt16(bytes.Span.Slice(0, 2));
             TransactionId = new StunTransactionId(bytes.Slice(8, 12));
-
+            
             this.bytes = bytes;
         }
 
@@ -72,7 +71,7 @@ namespace Datagrammer.Stun
 
         private static bool HasMagicCookie(ReadOnlyMemory<byte> bytes)
         {
-            return BitConverter.ToInt32(bytes.Span.Slice(4, 4)) == StunMagicCookie;
+            return UnsafeBitConverter.ToInt32(bytes.Span.Slice(4, 4)) == StunMagicCookie;
         }
 
         private static bool IsContentLengthValid(ReadOnlyMemory<byte> bytes)

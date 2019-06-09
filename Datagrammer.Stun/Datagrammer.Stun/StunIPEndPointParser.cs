@@ -29,56 +29,41 @@ namespace Datagrammer.Stun
         {
             endPoint = null;
 
-            if (!IsIPv4EndPointLengthValid(bytes))
+            if (!IsIPv4(bytes))
             {
                 return false;
             }
 
-            if (!IsIPv4Family(bytes))
-            {
-                return false;
-            }
-
-            endPoint = new IPEndPoint(new IPAddress(bytes.Slice(4, 4)), NetworkBitConverter.ToInt16(bytes.Slice(2, 2)));
+            endPoint = CreateEndPoint(bytes.Slice(4, 4), bytes.Slice(2, 2));
             return true;
         }
 
-        private static bool IsIPv4EndPointLengthValid(ReadOnlySpan<byte> bytes)
+        private static bool IsIPv4(ReadOnlySpan<byte> bytes)
         {
-            return bytes.Length >= StunIPv4EndPointLength;
-        }
-
-        private static bool IsIPv4Family(ReadOnlySpan<byte> bytes)
-        {
-            return bytes[1] == StunIPv4Family;
+            return bytes[1] == StunIPv4Family && bytes.Length >= StunIPv4EndPointLength;
         }
 
         private static bool TryParseIPv6EndPoint(ReadOnlySpan<byte> bytes, out IPEndPoint endPoint)
         {
             endPoint = null;
 
-            if (!IsIPv6EndPointLengthValid(bytes))
+            if (!IsIPv6(bytes))
             {
                 return false;
             }
 
-            if (!IsIPv6Family(bytes))
-            {
-                return false;
-            }
-
-            endPoint = new IPEndPoint(new IPAddress(bytes.Slice(4, 16)), NetworkBitConverter.ToInt16(bytes.Slice(2, 2)));
+            endPoint = CreateEndPoint(bytes.Slice(4, 16), bytes.Slice(2, 2));
             return true;
         }
 
-        private static bool IsIPv6EndPointLengthValid(ReadOnlySpan<byte> bytes)
+        private static bool IsIPv6(ReadOnlySpan<byte> bytes)
         {
-            return bytes.Length >= StunIPv6EndPointLength;
+            return bytes[1] == StunIPv6Family && bytes.Length >= StunIPv6EndPointLength;
         }
 
-        private static bool IsIPv6Family(ReadOnlySpan<byte> bytes)
+        private static IPEndPoint CreateEndPoint(ReadOnlySpan<byte> address, ReadOnlySpan<byte> port)
         {
-            return bytes[1] == StunIPv6Family;
+            return new IPEndPoint(new IPAddress(address.ToArray()), NetworkBitConverter.ToInt16(port));
         }
     }
 }

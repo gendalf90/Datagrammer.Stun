@@ -49,12 +49,12 @@ namespace Datagrammer.Stun
 
         private void WriteAttributeType(short attributeType, Span<byte> bytes)
         {
-            NetworkBitConverter.TryWriteBytes(bytes.Slice(0, 2), attributeType);
+            NetworkBitConverter.WriteBytes(bytes.Slice(0, 2), attributeType);
         }
 
         private void WriteAttributeContentLength(short attributeContentLength, Span<byte> bytes)
         {
-            NetworkBitConverter.TryWriteBytes(bytes.Slice(2, 2), attributeContentLength);
+            NetworkBitConverter.WriteBytes(bytes.Slice(2, 2), attributeContentLength);
         }
 
         private void WriteAttributeContent(ReadOnlySpan<byte> attributeContent, Span<byte> bytes)
@@ -77,12 +77,12 @@ namespace Datagrammer.Stun
 
         private void WriteType(Span<byte> bytes)
         {
-            NetworkBitConverter.TryWriteBytes(bytes.Slice(0, 2), type);
+            NetworkBitConverter.WriteBytes(bytes.Slice(0, 2), type);
         }
 
         private void WriteMagicCookie(Span<byte> bytes)
         {
-            BitConverter.TryWriteBytes(bytes.Slice(4, 4), StunMagicCookie);
+            UnsafeBitConverter.WriteBytes(bytes.Slice(4, 4), StunMagicCookie);
         }
 
         private void WriteTransactionId(Span<byte> bytes)
@@ -92,7 +92,7 @@ namespace Datagrammer.Stun
 
         private void WriteContentLength(Span<byte> bytes)
         {
-            NetworkBitConverter.TryWriteBytes(bytes.Slice(2, 2), (short)attributes.Length);
+            NetworkBitConverter.WriteBytes(bytes.Slice(2, 2), (short)attributes.Length);
         }
 
         private void WriteAttributes(Span<byte> bytes)
