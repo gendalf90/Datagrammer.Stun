@@ -35,10 +35,9 @@ namespace Datagrammer.Stun
 
         private void StartTimer(StunGeneratorOptions options)
         {
-            var stunMessage = StunMessageBuilder.Create()
-                                                .SetType(StunMessageType.BindingRequest)
-                                                .SetTransactionId(options.TransactionId)
-                                                .Build();
+            var stunMessage = new StunBuilderStep().SetType(StunMessageType.BindingRequest)
+                                                   .SetTransactionId(options.TransactionId)
+                                                   .Build();
             var address = options.Server.Address.GetAddressBytes();
             var port = options.Server.Port;
             var stunDatagram = new Datagram(stunMessage, address, port);

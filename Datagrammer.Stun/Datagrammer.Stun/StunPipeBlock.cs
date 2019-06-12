@@ -1,5 +1,6 @@
 ﻿using Datagrammer.Middleware;
 using System;
+using System.Net;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
@@ -57,9 +58,9 @@ namespace Datagrammer.Stun
                 return;
             }
 
-            if (StunIPEndPointParser.TryParse(attribute.Content.Span, out var endPoint))
+            if (StunIPEndPoint.TryParse(attribute.Content, out var endPoint))
             {
-                context.PublicAddress = endPoint;
+                context.PublicAddress = new IPEndPoint(new IPAddress(endPoint.Address.ToArray()), endPoint.Port);
             }
         }
 
