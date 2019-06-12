@@ -6,13 +6,13 @@ namespace Datagrammer.Stun
     {
         private const short StunAttributeHeaderLength = 4;
 
-        private ReadOnlyMemory<byte> remainAttributeBytes;
+        private ReadOnlyMemory<byte> remainsOfAttributeBytes;
         private StunAttribute? currentAttribute;
         private short currentAttributeContentLength;
 
         public StunAttributeEnumerator(ReadOnlyMemory<byte> bytes)
         {
-            remainAttributeBytes = bytes;
+            remainsOfAttributeBytes = bytes;
             currentAttribute = null;
             currentAttributeContentLength = 0;
         }
@@ -49,30 +49,30 @@ namespace Datagrammer.Stun
 
         private bool IsAttributeHeaderLengthValid
         {
-            get => remainAttributeBytes.Length >= StunAttributeHeaderLength;
+            get => remainsOfAttributeBytes.Length >= StunAttributeHeaderLength;
         }
 
         private void ReadAttributeContentLength()
         {
-            currentAttributeContentLength = NetworkBitConverter.ToInt16(remainAttributeBytes.Span.Slice(2, 2));
+            currentAttributeContentLength = NetworkBitConverter.ToInt16(remainsOfAttributeBytes.Span.Slice(2, 2));
         }
 
         private bool IsAttributeContentLengthValid
         {
-            get => StunAttributeHeaderLength + currentAttributeContentLength <= remainAttributeBytes.Length;
+            get => StunAttributeHeaderLength + currentAttributeContentLength <= remainsOfAttributeBytes.Length;
         }
 
         private void ParseCurrentAttribute()
         {
-            var type = NetworkBitConverter.ToInt16(remainAttributeBytes.Span.Slice(0, 2));
-            var contentBytes = remainAttributeBytes.Slice(StunAttributeHeaderLength, currentAttributeContentLength);
+            var type = NetworkBitConverter.ToInt16(remainsOfAttributeBytes.Span.Slice(0, 2));
+            var contentBytes = remainsOfAttributeBytes.Slice(StunAttributeHeaderLength, currentAttributeContentLength);
 
             currentAttribute = new StunAttribute(type, contentBytes);
         }
 
         private void SliceRemainAttributes()
         {
-            remainAttributeBytes = remainAttributeBytes.Slice(StunAttributeHeaderLength + currentAttributeContentLength);
+            remainsOfAttributeBytes = remainsOfAttributeBytes.Slice(StunAttributeHeaderLength + currentAttributeContentLength);
         }
     }
 }

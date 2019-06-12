@@ -42,7 +42,7 @@ namespace Datagrammer.Stun
 
             var response = new StunResponse();
 
-            foreach(var attribute in message)
+            foreach(var attribute in message.Attributes)
             {
                 TryParseMappedAddressAttribute(attribute, response);
             }

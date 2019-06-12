@@ -7,24 +7,18 @@ namespace Datagrammer.Stun
         private const short StunMessageHeaderLength = 20;
         private const int StunMagicCookie = 0x2112A442;
 
-        private readonly ReadOnlyMemory<byte> bytes;
-
         internal StunMessage(ReadOnlyMemory<byte> bytes)
         {
             Type = NetworkBitConverter.ToInt16(bytes.Span.Slice(0, 2));
             TransactionId = new StunTransactionId(bytes.Slice(8, 12));
-            
-            this.bytes = bytes;
+            Attributes = new StunAttributes(SliceAttributes(bytes));
         }
 
         public short Type { get; }
 
         public StunTransactionId TransactionId { get; }
 
-        public StunAttributeEnumerator GetEnumerator()
-        {
-            return bytes.IsEmpty ? new StunAttributeEnumerator() : new StunAttributeEnumerator(SliceAttributes(bytes));
-        }
+        public StunAttributes Attributes { get; }
 
         public static bool TryParse(ReadOnlyMemory<byte> bytes, out StunMessage message)
         {
