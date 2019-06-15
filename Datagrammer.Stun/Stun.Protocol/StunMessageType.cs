@@ -1,4 +1,4 @@
-﻿namespace Datagrammer.Stun
+﻿namespace Stun.Protocol
 {
     public static class StunMessageType
     {

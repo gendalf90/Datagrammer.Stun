@@ -2,7 +2,7 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace Datagrammer.Stun
+namespace Stun.Protocol
 {
     internal static class UnsafeBitConverter
     {

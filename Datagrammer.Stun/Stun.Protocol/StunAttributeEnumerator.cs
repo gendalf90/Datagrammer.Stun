@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Datagrammer.Stun
+namespace Stun.Protocol
 {
     public struct StunAttributeEnumerator
     {
@@ -36,7 +36,7 @@ namespace Datagrammer.Stun
             }
 
             ParseCurrentAttribute();
-            SliceRemainAttributes();
+            SliceRemainsOfAttributes();
 
             return true;
         }
@@ -70,7 +70,7 @@ namespace Datagrammer.Stun
             currentAttribute = new StunAttribute(type, contentBytes);
         }
 
-        private void SliceRemainAttributes()
+        private void SliceRemainsOfAttributes()
         {
             remainsOfAttributeBytes = remainsOfAttributeBytes.Slice(StunAttributeHeaderLength + currentAttributeContentLength);
         }

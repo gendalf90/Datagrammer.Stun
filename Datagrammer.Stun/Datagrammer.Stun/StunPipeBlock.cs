@@ -1,22 +1,22 @@
 ﻿using Datagrammer.Middleware;
+using Stun.Protocol;
 using System;
-using System.Net;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
 namespace Datagrammer.Stun
 {
-    public sealed class StunPipeBlock : MiddlewareBlock<Datagram, Datagram>, ISourceBlock<StunResponse>
+    public sealed class StunPipeBlock : MiddlewareBlock<Datagram, Datagram>, ISourceBlock<StunMessage>
     {
-        private readonly IPropagatorBlock<StunResponse, StunResponse> responseBuffer;
+        private readonly IPropagatorBlock<StunMessage, StunMessage> responseBuffer;
 
-        private readonly StunTransactionId transactionId;
+        public StunPipeBlock() : this(new StunPipeOptions())
+        {
+        }
 
         public StunPipeBlock(StunPipeOptions options) : base(options?.MiddlewareOptions)
         {
-            transactionId = options.TransactionId;
-
-            responseBuffer = new BufferBlock<StunResponse>(new DataflowBlockOptions
+            responseBuffer = new BufferBlock<StunMessage>(new DataflowBlockOptions
             {
                 BoundedCapacity = options.ResponseBufferCapacity
             });
@@ -26,41 +26,9 @@ namespace Datagrammer.Stun
         {
             await NextAsync(datagram);
 
-            if(!StunMessage.TryParse(datagram.Buffer, out var message))
+            if(StunMessage.TryParse(datagram.Buffer, out var message))
             {
-                return;
-            }
-
-            if(message.Type != StunMessageType.BindingResponse)
-            {
-                return;
-            }
-
-            if(message.TransactionId != transactionId)
-            {
-                return;
-            }
-
-            var response = new StunResponse();
-
-            foreach(var attribute in message.Attributes)
-            {
-                TryParseMappedAddressAttribute(attribute, response);
-            }
-
-            await responseBuffer.SendAsync(response);
-        }
-
-        private void TryParseMappedAddressAttribute(StunAttribute attribute, StunResponse context)
-        {
-            if(attribute.Type != StunAttributeType.MappedAddress)
-            {
-                return;
-            }
-
-            if (StunIPEndPoint.TryParse(attribute.Content, out var endPoint))
-            {
-                context.PublicAddress = new IPEndPoint(new IPAddress(endPoint.Address.ToArray()), endPoint.Port);
+                await responseBuffer.SendAsync(message);
             }
         }
 
@@ -79,22 +47,22 @@ namespace Datagrammer.Stun
             responseBuffer.Fault(exception);
         }
 
-        public StunResponse ConsumeMessage(DataflowMessageHeader messageHeader, ITargetBlock<StunResponse> target, out bool messageConsumed)
+        public StunMessage ConsumeMessage(DataflowMessageHeader messageHeader, ITargetBlock<StunMessage> target, out bool messageConsumed)
         {
             return responseBuffer.ConsumeMessage(messageHeader, target, out messageConsumed);
         }
 
-        public IDisposable LinkTo(ITargetBlock<StunResponse> target, DataflowLinkOptions linkOptions)
+        public IDisposable LinkTo(ITargetBlock<StunMessage> target, DataflowLinkOptions linkOptions)
         {
             return responseBuffer.LinkTo(target, linkOptions);
         }
 
-        public void ReleaseReservation(DataflowMessageHeader messageHeader, ITargetBlock<StunResponse> target)
+        public void ReleaseReservation(DataflowMessageHeader messageHeader, ITargetBlock<StunMessage> target)
         {
             responseBuffer.ReleaseReservation(messageHeader, target);
         }
 
-        public bool ReserveMessage(DataflowMessageHeader messageHeader, ITargetBlock<StunResponse> target)
+        public bool ReserveMessage(DataflowMessageHeader messageHeader, ITargetBlock<StunMessage> target)
         {
             return ReserveMessage(messageHeader, target);
         }

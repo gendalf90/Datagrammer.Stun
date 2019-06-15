@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Datagrammer.Stun
+namespace Stun.Protocol
 {
     public readonly struct StunTransactionId : IEquatable<StunTransactionId>
     {

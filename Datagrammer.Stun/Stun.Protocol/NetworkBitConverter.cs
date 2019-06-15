@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net;
 
-namespace Datagrammer.Stun
+namespace Stun.Protocol
 {
     internal static class NetworkBitConverter
     {

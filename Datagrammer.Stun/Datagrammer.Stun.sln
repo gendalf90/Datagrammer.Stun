@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.539
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Datagrammer.Stun", "Datagrammer.Stun\Datagrammer.Stun.csproj", "{187FB711-89B3-43B9-BB5B-C4D1B01B8475}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Datagrammer.Stun", "Datagrammer.Stun\Datagrammer.Stun.csproj", "{187FB711-89B3-43B9-BB5B-C4D1B01B8475}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{75B2B37D-B8CD-4AD5-8D86-4E0317443152}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests", "Tests\Tests.csproj", "{75B2B37D-B8CD-4AD5-8D86-4E0317443152}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stun.Protocol", "Stun.Protocol\Stun.Protocol.csproj", "{1DA208BE-4A76-4F3D-8B7F-ED71263D0DE2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{75B2B37D-B8CD-4AD5-8D86-4E0317443152}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{75B2B37D-B8CD-4AD5-8D86-4E0317443152}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{75B2B37D-B8CD-4AD5-8D86-4E0317443152}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1DA208BE-4A76-4F3D-8B7F-ED71263D0DE2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1DA208BE-4A76-4F3D-8B7F-ED71263D0DE2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1DA208BE-4A76-4F3D-8B7F-ED71263D0DE2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1DA208BE-4A76-4F3D-8B7F-ED71263D0DE2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

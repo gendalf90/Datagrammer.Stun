@@ -1,9 +1,11 @@
 using Datagrammer;
 using Datagrammer.Stun;
 using FluentAssertions;
+using Stun.Protocol;
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using Xunit;
@@ -15,36 +17,40 @@ namespace Tests.Integration
         [Fact]
         public async Task SendingAndReceiving()
         {
-            var random = new Random();
             var transationId = StunTransactionId.Generate();
-            var receivedResponses = new List<StunResponse>();
+            var mappedAddresses = new List<IPEndPoint>();
             var datagramBlock = new DatagramBlock(new DatagramOptions
             {
                 ListeningPoint = new IPEndPoint(IPAddress.Any, 50000)
             });
-            var stunMessagesGenerator = new StunGeneratorBlock(new StunGeneratorOptions
+            var stunMessage = new StunBuilderStep().SetType(StunMessageType.BindingRequest)
+                                                   .SetTransactionId(transationId)
+                                                   .Build();
+            var datagram = new Datagram(stunMessage, new byte[] { 64, 233, 161, 127 }, 19302); //stun1.l.google.com:19302
+            var stunMessageHandler = new ActionBlock<StunMessage>(response =>
             {
-                TransactionId = transationId,
-                Server = new IPEndPoint(IPAddress.Parse("64.233.161.127"), 19302), //stun1.l.google.com:19302
-                MessageSendingPeriod = TimeSpan.FromSeconds(1)
+                if(response.Type == StunMessageType.BindingResponse && response.TransactionId == transationId && response.Attributes.TryParseMappedAddress(out var address))
+                {
+                    mappedAddresses.Add(address);
+                }
             });
-            var stunMessageHandler = new ActionBlock<StunResponse>(response => receivedResponses.Add(response));
-            var stunMessagePipe = new StunPipeBlock(new StunPipeOptions { TransactionId = transationId });
-            stunMessagesGenerator.LinkTo(datagramBlock, new DataflowLinkOptions { PropagateCompletion = true });
+            var stunMessagePipe = new StunPipeBlock();
             datagramBlock.LinkTo(stunMessagePipe, new DataflowLinkOptions { PropagateCompletion = true });
             stunMessagePipe.LinkTo(stunMessageHandler, new DataflowLinkOptions { PropagateCompletion = true });
             stunMessagePipe.LinkTo(DataflowBlock.NullTarget<Datagram>());
 
-            datagramBlock.Start();
-            await datagramBlock.Initialization;
-            await Task.Delay(4000);
-            stunMessagesGenerator.Complete();
-            await Task.WhenAll(stunMessagesGenerator.Completion,
-                               datagramBlock.Completion,
-                               stunMessagePipe.Completion,
-                               stunMessageHandler.Completion);
+            using(new Timer(context => datagramBlock.Post(datagram), null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1)))
+            {
+                datagramBlock.Start();
+                await datagramBlock.Initialization;
+                await Task.Delay(4000);
+                datagramBlock.Complete();
+                await Task.WhenAll(datagramBlock.Completion,
+                                   stunMessagePipe.Completion,
+                                   stunMessageHandler.Completion);
+            }
 
-            receivedResponses.Should().HaveCountGreaterOrEqualTo(3);
+            mappedAddresses.Should().HaveCountGreaterOrEqualTo(3);
         }
     }
 }

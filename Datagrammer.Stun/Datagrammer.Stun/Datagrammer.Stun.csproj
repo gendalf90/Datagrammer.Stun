@@ -14,7 +14,10 @@
 
   <ItemGroup>
     <PackageReference Include="Datagrammer" Version="5.0.0" />
-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.5.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Stun.Protocol\Stun.Protocol.csproj" />
   </ItemGroup>
 
 </Project>
