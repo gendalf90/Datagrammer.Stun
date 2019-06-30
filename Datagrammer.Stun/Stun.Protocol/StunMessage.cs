@@ -35,7 +35,7 @@ namespace Stun.Protocol
 
         private static ReadOnlyMemory<byte> SliceAttributes(ReadOnlyMemory<byte> bytes)
         {
-            return bytes.Slice(StunMessageHeaderLength, NetworkBitConverter.ToInt16(bytes.Span.Slice(2, 2)));
+            return bytes.Slice(StunMessageHeaderLength, NetworkBitConverter.ToUInt16(bytes.Span.Slice(2, 2)));
         }
 
         private static bool IsItStunMessage(ReadOnlyMemory<byte> bytes)
@@ -70,7 +70,7 @@ namespace Stun.Protocol
 
         private static bool IsContentLengthValid(ReadOnlyMemory<byte> bytes)
         {
-            return StunMessageHeaderLength + NetworkBitConverter.ToInt16(bytes.Span.Slice(2, 2)) <= bytes.Length;
+            return StunMessageHeaderLength + NetworkBitConverter.ToUInt16(bytes.Span.Slice(2, 2)) <= bytes.Length;
         }
     }
 }

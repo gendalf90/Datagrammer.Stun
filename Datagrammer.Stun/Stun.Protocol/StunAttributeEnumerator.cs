@@ -8,7 +8,7 @@ namespace Stun.Protocol
 
         private ReadOnlyMemory<byte> remainsOfAttributeBytes;
         private StunAttribute? currentAttribute;
-        private short currentAttributeContentLength;
+        private ushort currentAttributeContentLength;
 
         public StunAttributeEnumerator(ReadOnlyMemory<byte> bytes)
         {
@@ -54,7 +54,7 @@ namespace Stun.Protocol
 
         private void ReadAttributeContentLength()
         {
-            currentAttributeContentLength = NetworkBitConverter.ToInt16(remainsOfAttributeBytes.Span.Slice(2, 2));
+            currentAttributeContentLength = NetworkBitConverter.ToUInt16(remainsOfAttributeBytes.Span.Slice(2, 2));
         }
 
         private bool IsAttributeContentLengthValid

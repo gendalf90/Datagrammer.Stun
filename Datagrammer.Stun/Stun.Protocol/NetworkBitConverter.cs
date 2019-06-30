@@ -10,6 +10,11 @@ namespace Stun.Protocol
             return IPAddress.NetworkToHostOrder(UnsafeBitConverter.ToInt16(bytes));
         }
 
+        public static ushort ToUInt16(ReadOnlySpan<byte> bytes)
+        {
+            return unchecked((ushort)ToInt16(bytes));
+        }
+
         public static int ToInt32(ReadOnlySpan<byte> bytes)
         {
             return IPAddress.NetworkToHostOrder(UnsafeBitConverter.ToInt32(bytes));
@@ -18,6 +23,11 @@ namespace Stun.Protocol
         public static void WriteBytes(Span<byte> destination, short value)
         {
             UnsafeBitConverter.WriteBytes(destination, IPAddress.HostToNetworkOrder(value));
+        }
+
+        public static void WriteBytes(Span<byte> destination, ushort value)
+        {
+            UnsafeBitConverter.WriteBytes(destination, IPAddress.HostToNetworkOrder(unchecked((short)value)));
         }
 
         public static void WriteBytes(Span<byte> destination, int value)

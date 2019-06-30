@@ -72,7 +72,7 @@ namespace Stun.Protocol
 
         private static StunIPEndPoint CreateEndPoint(ReadOnlyMemory<byte> address, ReadOnlyMemory<byte> port)
         {
-            return new StunIPEndPoint(address, NetworkBitConverter.ToInt16(port.Span));
+            return new StunIPEndPoint(address, NetworkBitConverter.ToUInt16(port.Span));
         }
     }
 }

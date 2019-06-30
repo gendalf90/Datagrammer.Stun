@@ -29,9 +29,17 @@ namespace Tests.Integration
             var datagram = new Datagram(stunMessage, new byte[] { 64, 233, 161, 127 }, 19302); //stun1.l.google.com:19302
             var stunMessageHandler = new ActionBlock<StunMessage>(response =>
             {
-                if(response.Type == StunMessageType.BindingResponse && response.TransactionId == transationId && response.Attributes.TryParseMappedAddress(out var address))
+                if(response.Type != StunMessageType.BindingResponse || response.TransactionId != transationId)
                 {
-                    mappedAddresses.Add(address);
+                    return;
+                }
+
+                foreach(var attribute in response.Attributes)
+                {
+                    if(StunMappedAddressAttribute.TryParse(attribute, out var mappedAddressAttribute))
+                    {
+                        mappedAddresses.Add(new IPEndPoint(new IPAddress(mappedAddressAttribute.EndPoint.Address.ToArray()), mappedAddressAttribute.EndPoint.Port));
+                    }
                 }
             });
             var stunMessagePipe = new StunPipeBlock();

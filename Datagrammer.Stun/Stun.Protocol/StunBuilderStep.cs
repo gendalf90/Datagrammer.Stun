@@ -66,7 +66,7 @@ namespace Stun.Protocol
         private int WriteAttributeTo(StunAttribute attribute, Span<byte> bytes)
         {
             WriteAttributeType(attribute.Type, bytes);
-            WriteAttributeContentLength((short)attribute.Content.Length, bytes);
+            WriteAttributeContentLength(attribute.Content.Length, bytes);
             WriteAttributeContent(attribute.Content.Span, bytes);
 
             return StunAttributeHeaderLength + attribute.Content.Length;
@@ -87,9 +87,14 @@ namespace Stun.Protocol
             NetworkBitConverter.WriteBytes(bytes.Slice(0, 2), attributeType);
         }
 
-        private void WriteAttributeContentLength(short attributeContentLength, Span<byte> bytes)
+        private void WriteAttributeContentLength(int attributeContentLength, Span<byte> bytes)
         {
-            NetworkBitConverter.WriteBytes(bytes.Slice(2, 2), attributeContentLength);
+            if(attributeContentLength > ushort.MaxValue)
+            {
+                throw new ArgumentOutOfRangeException("Attribute length is too long");
+            }
+
+            NetworkBitConverter.WriteBytes(bytes.Slice(2, 2), (ushort)attributeContentLength);
         }
 
         private void WriteAttributeContent(ReadOnlySpan<byte> attributeContent, Span<byte> bytes)
@@ -127,7 +132,12 @@ namespace Stun.Protocol
 
         private void WriteContentLength(Span<byte> bytes)
         {
-            NetworkBitConverter.WriteBytes(bytes.Slice(2, 2), (short)attributes.Length);
+            if(attributes.Length > ushort.MaxValue)
+            {
+                throw new ArgumentOutOfRangeException("Content length is too long");
+            }
+
+            NetworkBitConverter.WriteBytes(bytes.Slice(2, 2), (ushort)attributes.Length);
         }
 
         private void WriteAttributes(Span<byte> bytes)
