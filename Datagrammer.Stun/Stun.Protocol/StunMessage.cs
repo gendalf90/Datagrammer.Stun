@@ -4,17 +4,18 @@ namespace Stun.Protocol
 {
     public readonly struct StunMessage
     {
+        private const byte MaxFirstByteValue = 63;
         private const short StunMessageHeaderLength = 20;
         private const int StunMagicCookie = 0x2112A442;
 
-        internal StunMessage(ReadOnlyMemory<byte> bytes)
+        private StunMessage(ReadOnlyMemory<byte> bytes)
         {
-            Type = NetworkBitConverter.ToInt16(bytes.Span.Slice(0, 2));
+            Type = new StunMessageType(NetworkBitConverter.ToUInt16(bytes.Span.Slice(0, 2)));
             TransactionId = new StunTransactionId(bytes.Slice(8, 12));
             Attributes = new StunAttributes(SliceAttributes(bytes));
         }
 
-        public short Type { get; }
+        public StunMessageType Type { get; }
 
         public StunTransactionId TransactionId { get; }
 
@@ -45,6 +46,11 @@ namespace Stun.Protocol
                 return false;
             }
 
+            if (!HasFirstTwoBitsAreEmpty(bytes))
+            {
+                return false;
+            }
+
             if (!HasMagicCookie(bytes))
             {
                 return false;
@@ -61,6 +67,11 @@ namespace Stun.Protocol
         private static bool IsHeaderLengthValid(ReadOnlyMemory<byte> bytes)
         {
             return bytes.Length >= StunMessageHeaderLength;
+        }
+
+        private static bool HasFirstTwoBitsAreEmpty(ReadOnlyMemory<byte> bytes)
+        {
+            return bytes.Span[0] <= MaxFirstByteValue;
         }
 
         private static bool HasMagicCookie(ReadOnlyMemory<byte> bytes)

@@ -27,7 +27,7 @@ namespace Stun.Protocol
 
         public static void WriteBytes(Span<byte> destination, ushort value)
         {
-            UnsafeBitConverter.WriteBytes(destination, IPAddress.HostToNetworkOrder(unchecked((short)value)));
+            WriteBytes(destination, unchecked((short)value));
         }
 
         public static void WriteBytes(Span<byte> destination, int value)

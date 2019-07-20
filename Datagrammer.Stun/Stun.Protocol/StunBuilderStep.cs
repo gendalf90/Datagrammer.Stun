@@ -8,18 +8,18 @@ namespace Stun.Protocol
         private const short StunAttributeHeaderLength = 4;
         private const int StunMagicCookie = 0x2112A442;
 
-        private readonly short type;
+        private readonly StunMessageType type;
         private readonly StunTransactionId transactionId;
         private readonly ReadOnlyMemory<byte> attributes;
 
-        internal StunBuilderStep(short type, StunTransactionId transactionId, ReadOnlyMemory<byte> attributes)
+        private StunBuilderStep(StunMessageType type, StunTransactionId transactionId, ReadOnlyMemory<byte> attributes)
         {
             this.type = type;
             this.transactionId = transactionId;
             this.attributes = attributes;
         }
 
-        public StunBuilderStep SetType(short type)
+        public StunBuilderStep SetType(StunMessageType type)
         {
             return new StunBuilderStep(type, transactionId, attributes);
         }
