@@ -6,8 +6,6 @@ namespace Stun.Protocol
     {
         private const int TransactionIdLength = 12;
 
-        private static readonly Random random = new Random();
-
         private static readonly byte[] empty = new byte[TransactionIdLength];
 
         private readonly ReadOnlyMemory<byte> bytes;
@@ -60,7 +58,9 @@ namespace Stun.Protocol
         public static StunTransactionId Generate()
         {
             var bytes = new byte[TransactionIdLength];
-            random.NextBytes(bytes);
+
+            ThreadSafeRandom.NextBytes(bytes);
+
             return new StunTransactionId(bytes);
         }
 
