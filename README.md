@@ -1,6 +1,6 @@
 # Datagrammer.Stun
 
-If you want to know more about STUN please read this [wiki](https://en.wikipedia.org/wiki/STUN). Datagrammer.Stun helps you to use STUN protocol and public servers for public ip address discovering. The [package](https://www.nuget.org/packages/stun/) is used for STUN protocol integration.
+If you want to know more about STUN please read this [wiki](https://en.wikipedia.org/wiki/STUN). Datagrammer.Stun helps you to use STUN protocol and public servers for public ip address discovering.
 
 ### Getting started
 
@@ -18,53 +18,35 @@ using Datagrammer.Stun;
 
 ### Initialization
 
-Each STUN message has transaction identificator value:
+Building message:
 
 ```csharp
-var transactionId = Guid.NewGuid();
+var stunMessage = new StunBuilderStep().SetType(StunMessageType.BindingRequest)
+                                       .SetTransactionId(StunTransactionId.Generate())
+                                       .Build();
 ```
 
-To initialize STUN messages generator use this code:
+Receiving message:
 
 ```csharp
-var generator = new StunGeneratorBlock(new StunGeneratorOptions
+var stunMessagePipe = new StunPipeBlock();
+var targetBlock = new ActionBlock<StunMessage>(message =>
 {
-    TransactionId = transactionId,
-    Server = new IPEndPoint(IPAddress.Parse("64.233.161.127"), 19302), //stun1.l.google.com:19302
-    MessageSendingPeriod = TimeSpan.FromSeconds(1) //message will be created after each of these periods
+    if(response.Type != StunMessageType.BindingResponse || response.TransactionId != transationId)
+    {
+        return;
+    }
+    
+    foreach(var attribute in response.Attributes)
+    {
+        if(StunMappedAddressAttribute.TryParse(attribute, out var mappedAddressAttribute))
+        {
+            Console.WriteLine(new IPEndPoint(new IPAddress(mappedAddressAttribute.EndPoint.Address.ToArray()), mappedAddressAttribute.EndPoint.Port));
+        }
+    }
 });
-```
-
-Also you need STUN message handler. Define it like this:
-
-```csharp
-Func<StunResponse, Task> responseHandlingFunc = response =>
-{
-    Console.WriteLine(response.PublicAddress);
-    return Task.CompletedTask;
-};
-
-var stunMessageHandler = new StunPipeBlock(responseHandlingFunc, new StunPipeOptions
-{
-    TransactionId = transactionId //needed to identify responses from server
-});
-```
-
-### Using
-
-With [Datagrammer](https://github.com/gendalf90/Datagrammer) using example:
-
-```csharp
-var datagramBlock = new DatagramBlock(new DatagramOptions
-{
-    ListeningPoint = new IPEndPoint(IPAddress.Any, 50000)
-});
-
-generator.LinkTo(datagramBlock);
-datagramBlock.LinkTo(stunMessageHandler);
-stunMessageHandler.LinkTo(DataflowBlock.NullTarget<Datagram>()); //because it works like pipe and you need to consume datagrams that buffer isn't blocked
-
-datagramBlock.Start();
+stumMessagePipe.LinkTo(targetBlock);
+datagramBlock.LinkTo(stumMessagePipe);
 ```
 
 ### License
