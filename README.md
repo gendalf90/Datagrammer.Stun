@@ -32,12 +32,12 @@ Receiving message:
 var stunMessagePipe = new StunPipeBlock();
 var targetBlock = new ActionBlock<StunMessage>(message =>
 {
-    if(response.Type != StunMessageType.BindingResponse || response.TransactionId != transationId)
+    if(message.Type != StunMessageType.BindingResponse || message.TransactionId != transationId)
     {
         return;
     }
     
-    foreach(var attribute in response.Attributes)
+    foreach(var attribute in message.Attributes)
     {
         if(StunMappedAddressAttribute.TryParse(attribute, out var mappedAddressAttribute))
         {
