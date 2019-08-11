@@ -45,8 +45,8 @@ var targetBlock = new ActionBlock<StunMessage>(message =>
         }
     }
 });
-stumMessagePipe.LinkTo(targetBlock);
-datagramBlock.LinkTo(stumMessagePipe);
+stunMessagePipe.LinkTo(targetBlock);
+datagramBlock.LinkTo(stunMessagePipe);
 ```
 
 ### License
