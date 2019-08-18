@@ -19,12 +19,12 @@ using Stun.Protocol;
 
 ### Initialization
 
-Building message:
+Building message bytes:
 
 ```csharp
-var stunMessage = new StunBuilderStep().SetType(StunMessageType.BindingRequest)
-                                       .SetTransactionId(StunTransactionId.Generate())
-                                       .Build();
+var stunMessageBytes = new StunBuilderStep().SetType(StunMessageType.BindingRequest)
+                                            .SetTransactionId(StunTransactionId.Generate())
+                                            .Build();
 ```
 
 Receiving message:
