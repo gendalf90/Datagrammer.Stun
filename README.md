@@ -14,6 +14,7 @@ Use namespace
 
 ```csharp
 using Datagrammer.Stun;
+using Stun.Protocol;
 ```
 
 ### Initialization
